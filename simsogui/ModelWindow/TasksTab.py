@@ -108,7 +108,8 @@ class TasksTable(QTableWidget):
                         "List of Act. dates (ms)", "Deadline (ms)",
                         "WCET (ms)", "ACET (ms)", "ET Std Dev (ms)",
                         "Base CPI", "Instructions", "MIX",
-                        "Stack file", "Preemption cost", "Followed by"]
+                        "Stack file", "Preemption cost", "Followed by",
+                        "C_LO", "C_HI", "Priority"]
 
         self._dict_header = {
             'id': 0,
@@ -127,7 +128,10 @@ class TasksTable(QTableWidget):
             'mix': 13,
             'sdp': 14,
             'preemption_cost': 15,
-            'followed': 16
+            'followed': 16,
+            'C_LO': 17,
+            'C_HI': 18,
+            'Priority': 19
         }
 
         self.refresh_table()
@@ -146,6 +150,9 @@ class TasksTable(QTableWidget):
         self.horizontalHeader().hideSection(self._dict_header['et_stddev'])
         self.horizontalHeader().hideSection(
             self._dict_header['preemption_cost'])
+        self.horizontalHeader().hideSection(self._dict_header['C_LO'])
+        self.horizontalHeader().hideSection(self._dict_header['C_HI'])
+        self.horizontalHeader().hideSection(self._dict_header['Priority'])
 
         if etm == 'cache':
             self.horizontalHeader().showSection(self._dict_header['base_cpi'])
@@ -158,6 +165,10 @@ class TasksTable(QTableWidget):
         elif etm == 'acet':
             self.horizontalHeader().showSection(self._dict_header['acet'])
             self.horizontalHeader().showSection(self._dict_header['et_stddev'])
+        elif etm == 'mixedcriticality':
+            self.horizontalHeader().showSection(self._dict_header['C_LO'])
+            self.horizontalHeader().showSection(self._dict_header['C_HI'])
+            self.horizontalHeader().showSection(self._dict_header['Priority'])
 
         self.resizeColumnsToContents()
 
