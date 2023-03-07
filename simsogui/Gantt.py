@@ -111,14 +111,14 @@ class GanttCanvas(QWidget):
                 text = str(i)
                 fw = qp.fontMetrics().width(text)
                 fh = qp.fontMetrics().height()
-                qp.drawText(x + convX(i - start_date) - fw // 2,
-                            graph_height + y + fh + 1, text)
+                qp.drawText(x + int(convX(i - start_date) - fw // 2),
+                            int(graph_height + y + fh + 1), text)
                 pen = qp.pen()
                 if i != start_date and i != end_date:
                     qp.setPen(QPen(Qt.DotLine))
-                    qp.drawLine(x + convX(i - start_date), y,
-                                x + convX(i - start_date),
-                                graph_height + y + 1)
+                    qp.drawLine(int(x + convX(i - start_date)), int(y),
+                                int(x + convX(i - start_date)),
+                                int(graph_height + y + 1))
                     qp.setPen(pen)
 
                 h = 4
@@ -126,8 +126,8 @@ class GanttCanvas(QWidget):
                 h = 2
             if h:
                 qp.drawLine(
-                    x + convX(i - start_date), graph_height + 1 + y,
-                    x + convX(i - start_date), graph_height + y + 1 + h)
+                    int(x + convX(i - start_date)), int(graph_height + 1 + y),
+                    int(x + convX(i - start_date)), int(graph_height + y + 1 + h))
 
         qp.translate(x - 20, y + 65)
         qp.rotate(-90)
@@ -193,7 +193,7 @@ class GanttCanvas(QWidget):
         qp.setPen(color)
         qp.setBrush(color)
         x, y = self.origGraph(c)
-        qp.drawEllipse(x + self.convX(x_circle) - 1, y + 50 - 1, 3, 3)
+        qp.drawEllipse(int(x + self.convX(x_circle) - 1), int(y + 50 - 1), 3, 3)
         qp.restore()
 
     def get_color(self, i):
@@ -349,15 +349,15 @@ class GanttCanvas(QWidget):
         images = []
         while total_width < self._width:
             w = min(self._width - total_width, 2 ** 15)
-            image = QImage(w, self._height, QImage.Format_ARGB32)
+            image = QImage(int(w), int(self._height), QImage.Format_ARGB32)
             image.fill(QColor(235, 235, 235, 255))
             total_width += w
             images.append(image)
         return images
 
     def _update(self):
-        QWidget.setFixedWidth(self, self._width)
-        QWidget.setFixedHeight(self, self._height)
+        QWidget.setFixedWidth(self, int(self._width))
+        QWidget.setFixedHeight(self, int(self._height))
         QWidget.setSizePolicy(self,
                               QSizePolicy.Fixed,
                               QSizePolicy.Fixed)
