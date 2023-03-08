@@ -109,7 +109,7 @@ class TasksTable(QTableWidget):
                         "WCET (ms)", "ACET (ms)", "ET Std Dev (ms)",
                         "Base CPI", "Instructions", "MIX",
                         "Stack file", "Preemption cost", "Followed by",
-                        "C_LO", "C_HI", "Priority"]
+                        "WCET_HI (ms)", "HI Priority?", "Fail Time"]
 
         self._dict_header = {
             'id': 0,
@@ -129,9 +129,9 @@ class TasksTable(QTableWidget):
             'sdp': 14,
             'preemption_cost': 15,
             'followed': 16,
-            'C_LO': 17,
-            'C_HI': 18,
-            'Priority': 19
+            'wcet_hi': 17,
+            'is_high_priority': 18,
+            'fail_time': 19
         }
 
         self.refresh_table()
@@ -150,9 +150,9 @@ class TasksTable(QTableWidget):
         self.horizontalHeader().hideSection(self._dict_header['et_stddev'])
         self.horizontalHeader().hideSection(
             self._dict_header['preemption_cost'])
-        self.horizontalHeader().hideSection(self._dict_header['C_LO'])
-        self.horizontalHeader().hideSection(self._dict_header['C_HI'])
-        self.horizontalHeader().hideSection(self._dict_header['Priority'])
+        self.horizontalHeader().hideSection(self._dict_header['wcet_hi'])
+        self.horizontalHeader().hideSection(self._dict_header['is_high_priority'])
+        self.horizontalHeader().hideSection(self._dict_header['fail_time'])
 
         if etm == 'cache':
             self.horizontalHeader().showSection(self._dict_header['base_cpi'])
@@ -166,9 +166,11 @@ class TasksTable(QTableWidget):
             self.horizontalHeader().showSection(self._dict_header['acet'])
             self.horizontalHeader().showSection(self._dict_header['et_stddev'])
         elif etm == 'mixedcriticality':
-            self.horizontalHeader().showSection(self._dict_header['C_LO'])
-            self.horizontalHeader().showSection(self._dict_header['C_HI'])
-            self.horizontalHeader().showSection(self._dict_header['Priority'])
+            self.horizontalHeader().hideSection(self._dict_header['wcet'])
+            self.horizontalHeader().showSection(self._dict_header['wcet'])
+            self.horizontalHeader().showSection(self._dict_header['wcet_hi'])
+            self.horizontalHeader().showSection(self._dict_header['is_high_priority'])
+            self.horizontalHeader().showSection(self._dict_header['fail_time'])
 
         self.resizeColumnsToContents()
 
@@ -217,8 +219,8 @@ class TasksTable(QTableWidget):
             .setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
         for i in ['activation_date', 'period',
-                  'deadline', 'wcet', 'base_cpi', 'n_instr', 'mix', 'acet',
-                  'et_stddev', 'preemption_cost']:
+                  'deadline', 'base_cpi', 'n_instr', 'mix', 'acet',
+                  'et_stddev', 'preemption_cost', 'wcet', 'wcet_hi', 'fail_time']:
             self.setItem(row, self._dict_header[i],
                          QTableWidgetItem(str(task.__dict__[i])))
             self.item(row, self._dict_header[i]) \
@@ -232,6 +234,12 @@ class TasksTable(QTableWidget):
         combo.currentIndexChanged.connect(
             lambda x: self._cell_changed(row, self._dict_header['followed']))
         self.setCellWidget(row, self._dict_header['followed'], combo)
+        
+        item = QTableWidgetItem(task.is_hi and 'Yes' or 'No')
+        item.setFlags(
+            Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+        item.setCheckState(task.is_hi and Qt.Checked or Qt.Unchecked)
+        self.setItem(row, self._dict_header['is_high_priority'], item)
 
         for col in range(len(self._custom_fields)):
             key = self._custom_fields[col]
@@ -337,6 +345,10 @@ class TasksTable(QTableWidget):
             old_value = str(task.mix)
         elif col == self._dict_header['preemption_cost']:
             old_value = str(task.preemption_cost)
+        elif col == self._dict_header['wcet_hi']:
+            old_value = str(task.wcet_hi)
+        elif col == self._dict_header['fail_time']:
+            old_value = str(task.fail_time)
         elif col >= len(self._header):
             key = self._custom_fields[col - len(self._header)]
             try:
@@ -409,6 +421,19 @@ class TasksTable(QTableWidget):
                 preemption_cost = int(self.item(row, col).text())
                 assert preemption_cost >= 0
                 task.preemption_cost = preemption_cost
+            elif col == self._dict_header['wcet_hi']:
+                wcet_hi = float(self.item(row, col).text())
+                assert wcet_hi > 0
+                task.wcet_hi = wcet_hi
+            elif col == self._dict_header['fail_time']:
+                fail_time = float(self.item(row, col).text())
+                assert fail_time > 0
+                task.fail_time = fail_time
+            elif col == self._dict_header['is_high_priority']:
+                task.is_hi = (self.item(row, col).checkState()
+                                      == Qt.Checked)
+                self.item(row, col).setText(
+                    'Yes' if task.is_hi else 'No')
             elif col == self._dict_header['followed']:
                 txt = self.cellWidget(row, col).currentText()
                 m = re.match('.+\((.+)\)', txt)
