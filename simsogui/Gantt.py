@@ -131,7 +131,7 @@ class GanttCanvas(QWidget):
 
         qp.translate(x - 20, y + 65)
         qp.rotate(-90)
-        qp.setFont(QFont('Decorative', 10))
+        qp.setFont(QFont('Decorative', 8))
         qp.drawText(QRect(0, 0, 80, 20), Qt.AlignCenter, name)
         qp.restore()
 
@@ -260,9 +260,14 @@ class GanttCanvas(QWidget):
         # Plot tasks
         for task in [x for x in sim.task_list if x in self._selected_items]:
             c += 1
+            if task.is_high_priority:
+                priority_text = '(HI)'
+            else:  
+                priority_text = '(LO)'
+            
+            #if():
             self.plot_graph(
-                qp, task.name, start_date, end_date, step, substep, c)
-
+                qp, task.name + " " + priority_text, start_date, end_date, step, substep, c)
             x1 = start_date
             color = None
             for evt in task.monitor:
